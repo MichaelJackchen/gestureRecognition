@@ -43,21 +43,20 @@ def skinMask2(images):
     '''
     #生成椭圆模型
     skinCrCbHist = np.zeros((256,256,1))
-    # ellipse(skinCrCbHist, Point(113, 155.6), Size(23.4, 15.2), 43.0, 0.0, 360.0, Scalar(255, 255, 255), -1);
+    #新建单通道的灰度图
+    newImage = np.zeros((images.shape[0],images.shape[1],1))
     # 轴(以及中心)必须是整数元组,而不是浮点数
     oval = cv2.ellipse(skinCrCbHist, (113,155), (23,15), 43.0, 0.0, 360.0, (255, 255, 255), -1)
     # 将图片转换为YCrCb色彩空间的图片
     imageY = cv2.cvtColor(images, cv2.COLOR_BGR2YCrCb)
     # 分离Y-CR-CB参数
-    imageY_Cr = imageY[1]
-    imageY_Cb = imageY[2]
-    print(imageY)
-    print(oval.shape)
-    # for i in range(images.shape[0]):
-    #     for j in range(images.shape[1]):
-    #         if
-    # cv2.imshow("image", imageY)
-    # cv2.waitKey(0)
+    imageY_Cr = imageY[:,:,1]
+    imageY_Cb = imageY[:,:,2]
+    for i in range(images.shape[0]):
+        for j in range(images.shape[1]):
+            if oval[imageY_Cr[i][j]][imageY_Cb[i][j]] > 0:
+                newImage[i][j] = 255
+    return newImage
 
 imageIn()
 
