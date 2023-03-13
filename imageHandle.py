@@ -11,12 +11,13 @@ def imageIn():
     image = cv2.imread("images\\1_30.png")
     # print("Blue:",image[50][50][0])
     # print(type(image.shape),image.shape[1])
-    erzhi = shinMask(image)
-    cv2.imshow("image", erzhi)
-    cv2.waitKey(0)
+    skinMask2(image)
+    # erzhi = skinMask(image)
+    # cv2.imshow("image", erzhi)
+    # cv2.waitKey(0)
 
 
-def shinMask(images):
+def skinMask(images):
     """
     将手部图片二值化,基于简单RGB阈值判断
     判别式:R>95 && G>40 && B>20 && R>G && R>B && Max(R,G,B)-Min(R,G,B)>15 && Abs(R-G)>15
@@ -34,4 +35,29 @@ def shinMask(images):
 
     return images
 
+def skinMask2(images):
+    '''
+    基于椭圆皮肤模型,YCrCb:Y-明亮度,(cr,cb)-色度
+    :param images:
+    :return:二值化后的图片:
+    '''
+    #生成椭圆模型
+    skinCrCbHist = np.zeros((256,256,1))
+    # ellipse(skinCrCbHist, Point(113, 155.6), Size(23.4, 15.2), 43.0, 0.0, 360.0, Scalar(255, 255, 255), -1);
+    # 轴(以及中心)必须是整数元组,而不是浮点数
+    oval = cv2.ellipse(skinCrCbHist, (113,155), (23,15), 43.0, 0.0, 360.0, (255, 255, 255), -1)
+    # 将图片转换为YCrCb色彩空间的图片
+    imageY = cv2.cvtColor(images, cv2.COLOR_BGR2YCrCb)
+    # 分离Y-CR-CB参数
+    imageY_Cr = imageY[1]
+    imageY_Cb = imageY[2]
+    print(imageY)
+    print(oval.shape)
+    # for i in range(images.shape[0]):
+    #     for j in range(images.shape[1]):
+    #         if
+    # cv2.imshow("image", imageY)
+    # cv2.waitKey(0)
+
 imageIn()
+
