@@ -8,14 +8,28 @@ def imageIn():
     :return:输出图片像素矩阵信息
     """
     # 路径前有数字要加上双斜杠
-    image = cv2.imread("images\\1_30.png")
-    # print("Blue:",image[50][50][0])
-    # print(type(image.shape),image.shape[1])
-    skinMask2(image)
+    image = cv2.imread("images\\IMG_1129.JPG")
+    # image_gray = Gray_img(image)
+    biImage = skinMask2(image)
+    lunkuo = getHandFeatures(biImage)
     # erzhi = skinMask(image)
-    # cv2.imshow("image", erzhi)
-    # cv2.waitKey(0)
+    cv2.imshow("image", lunkuo)
+    cv2.waitKey(0)
 
+def Gray_img(img):
+    '''
+    图片灰度化
+    :param img:
+    :return:
+    '''
+    # img_gray = cv.cvtColor(img_2, cv.COLOR_RGB2GRAY)
+    (h, w, c) = img.shape
+    img_b = img[:, :, 0]
+    img_g = img[:, :, 1]
+    img_r = img[:, :, 2]
+    img_gray = img_r * 0.299 + img_g * 0.587 + img_b * 0.114
+    img_gray = img_gray.astype(np.uint8)  # (1)
+    return img_gray
 
 def skinMask(images):
     """
@@ -43,8 +57,8 @@ def skinMask2(images):
     '''
     #生成椭圆模型
     skinCrCbHist = np.zeros((256,256,1))
-    #新建单通道的灰度图
-    newImage = np.zeros((images.shape[0],images.shape[1],1))
+    #新建单通道的灰度图,不指定类型默认为float32(提取轮廓时会报错),图像需要无符号整数即uint8
+    newImage = np.zeros((images.shape[0],images.shape[1],1),dtype=np.uint8)
     # 轴(以及中心)必须是整数元组,而不是浮点数
     oval = cv2.ellipse(skinCrCbHist, (113,155), (23,15), 43.0, 0.0, 360.0, (255, 255, 255), -1)
     # 将图片转换为YCrCb色彩空间的图片
@@ -58,5 +72,28 @@ def skinMask2(images):
                 newImage[i][j] = 255
     return newImage
 
-imageIn()
+def getHandFeatures(binariedImage):
+    '''
+    基于傅里叶描绘子提取手部轮廓特征
+    :return:
+    '''
+    # opencv高版本返回两个值
+    contours, hierarchy = cv2.findContours(
+        binariedImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
+    # 寻找最大轮廓
+    maxSize = 0
+    for i in range(0,len(contours)):
+        if(len(contours[i])) > maxSize:
+            maxSize = len(contours[i])
+            contourNum = i
+    # 创建一个白色背景板，在上面画上最大轮廓
+    whiteBack = np.zeros((binariedImage.shape[0],binariedImage.shape[1],3),dtype=np.uint8)
+    whiteBack[0:binariedImage.shape[0]-1, 0:binariedImage.shape[1]-1] = 255
+    # 第三个参数为最大轮廓
+    cv2.drawContours(whiteBack, contours, contourNum, (0,0,0), 8)
 
+    # 计算图像的傅里叶描绘子
+
+    return whiteBack
+imageIn()
