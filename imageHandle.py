@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 
 def imageIn():
@@ -8,7 +9,7 @@ def imageIn():
     :return:输出图片像素矩阵信息
     """
     # 路径前有数字要加上双斜杠
-    image = cv2.imread("images\\IMG_1129.JPG")
+    image = cv2.imread("images\\IMG_1129.jpg")
     # image_gray = Gray_img(image)
     biImage = skinMask2(image)
     lunkuo = getHandFeatures(biImage)
@@ -56,7 +57,7 @@ def skinMask2(images):
     :return:二值化后的图片:
     '''
     #生成椭圆模型
-    skinCrCbHist = np.zeros((256,256,1))
+    skinCrCbHist = np.zeros((256,256))
     #新建单通道的灰度图,不指定类型默认为float32(提取轮廓时会报错),图像需要无符号整数即uint8
     newImage = np.zeros((images.shape[0],images.shape[1],1),dtype=np.uint8)
     # 轴(以及中心)必须是整数元组,而不是浮点数
@@ -68,9 +69,23 @@ def skinMask2(images):
     imageY_Cb = imageY[:,:,2]
     for i in range(images.shape[0]):
         for j in range(images.shape[1]):
-            if oval[imageY_Cr[i][j]][imageY_Cb[i][j]] > 0:
+            if skinCrCbHist[imageY_Cr[i][j]][imageY_Cb[i][j]] > 0:
                 newImage[i][j] = 255
     return newImage
+
+# def skinMask3(roi):
+#     skinCrCbHist = np.zeros((256,256), dtype= np.uint8)
+#     cv2.ellipse(skinCrCbHist, (113,155),(23,25), 43, 0, 360, (255,255,255), -1) #绘制椭圆弧线
+#     YCrCb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB) #转换至YCrCb空间
+#     (y,Cr,Cb) = cv2.split(YCrCb) #拆分出Y,Cr,Cb值
+#     skin = np.zeros(Cr.shape, dtype = np.uint8) #掩膜
+#     (x,y) = Cr.shape
+#     for i in range(0, x):
+#         for j in range(0, y):
+#             if skinCrCbHist [Cr[i][j], Cb[i][j]] > 0: #若不在椭圆区间中
+#                 skin[i][j] = 255
+#     res = cv2.bitwise_and(roi,roi, mask = skin)
+#     return res
 
 def getHandFeatures(binariedImage):
     '''
@@ -84,16 +99,42 @@ def getHandFeatures(binariedImage):
     # 寻找最大轮廓
     maxSize = 0
     for i in range(0,len(contours)):
-        if(len(contours[i])) > maxSize:
+        if len(contours[i]) > maxSize:
             maxSize = len(contours[i])
             contourNum = i
     # 创建一个白色背景板，在上面画上最大轮廓
     whiteBack = np.zeros((binariedImage.shape[0],binariedImage.shape[1],3),dtype=np.uint8)
     whiteBack[0:binariedImage.shape[0]-1, 0:binariedImage.shape[1]-1] = 255
-    # 第三个参数为最大轮廓
-    cv2.drawContours(whiteBack, contours, contourNum, (0,0,0), 8)
+    # 第三个参数为最大轮廓的索引
+    cv2.drawContours(whiteBack, contours, contourNum, (0,0,0), 1)
 
-    # 计算图像的傅里叶描绘子
-
+    # 计算图像的傅里叶描绘子,存储傅里叶变换后的系数(前14位)
+    f = []
+    fd = []
+    for i in range(0,maxSize):
+        sumx = sumy = 0.0
+        for j in range(0,maxSize):
+            p = contours[contourNum][j][0]
+            x= p[0]
+            y = p[1]
+            sumx += (x * math.cos(2 * math.pi * i * j / maxSize) + y * math.sin(2 * math.pi * i * j / maxSize));
+            sumy += (y * math.cos(2 * math.pi * i * j / maxSize) - x * math.sin(2 * math.pi * i * j / maxSize));
+        f.append(math.sqrt((sumx * sumx) + (sumy * sumy)))
+    fd.append(0.0)
+    # 进行归一化，然后放入最终结果中
+    for k in range(2,16):
+        f[k] = f[k] / f[1];
+        fd.append(f[k]);
+    # 输出最终的手势特征
+    out = np.zeros(len(fd),dtype=np.float32)
+    for i in range(0,len(fd)):
+        out[i] = fd[i]
     return whiteBack
+
+def getAllFeatures():
+    '''
+    提取所有训练样本的特征，按照特征值与标签矩阵形式存储
+    :return:
+    '''
+
 imageIn()
