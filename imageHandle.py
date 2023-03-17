@@ -9,7 +9,7 @@ def imageIn():
     :return:输出图片像素矩阵信息
     """
     # 路径前有数字要加上双斜杠
-    image = cv2.imread("images\\IMG_1129.jpg")
+    image = cv2.imread("images\\test\\IMG_1129.jpg")
     # image_gray = Gray_img(image)
     biImage = skinMask2(image)
     lunkuo = getHandFeatures(biImage)
@@ -103,10 +103,10 @@ def getHandFeatures(binariedImage):
             maxSize = len(contours[i])
             contourNum = i
     # 创建一个白色背景板，在上面画上最大轮廓
-    whiteBack = np.zeros((binariedImage.shape[0],binariedImage.shape[1],3),dtype=np.uint8)
-    whiteBack[0:binariedImage.shape[0]-1, 0:binariedImage.shape[1]-1] = 255
+    # whiteBack = np.zeros((binariedImage.shape[0],binariedImage.shape[1],3),dtype=np.uint8)
+    # whiteBack[0:binariedImage.shape[0]-1, 0:binariedImage.shape[1]-1] = 255
     # 第三个参数为最大轮廓的索引
-    cv2.drawContours(whiteBack, contours, contourNum, (0,0,0), 1)
+    # cv2.drawContours(whiteBack, contours, contourNum, (0,0,0), 1)
 
     # 计算图像的傅里叶描绘子,存储傅里叶变换后的系数(前14位)
     f = []
@@ -129,12 +129,6 @@ def getHandFeatures(binariedImage):
     out = np.zeros(len(fd),dtype=np.float32)
     for i in range(0,len(fd)):
         out[i] = fd[i]
-    return whiteBack
+    return out
 
-def getAllFeatures():
-    '''
-    提取所有训练样本的特征，按照特征值与标签矩阵形式存储
-    :return:
-    '''
-
-imageIn()
+# imageIn()
