@@ -13,10 +13,11 @@ def fourierDesciptor(res):
     Laplacian = cv2.convertScaleAbs(dst)
     contour = find_contours(Laplacian)#提取轮廓点坐标
 
-    contour_array = contour[0][:, 0, :]#注意这里只保留区域面积最大的轮廓点坐标
+    contour_array = contour[0][:, 0, :]#注意这里只保留区域面积最大的轮廓点坐标,相当于再做了手势轮廓筛查
     ret_np = np.ones(dst.shape, np.uint8) #创建黑色幕布
     ret = cv2.drawContours(ret_np,contour[0],-1,(255,255,255),1) #绘制白色轮廓
     contours_complex = np.empty(contour_array.shape[:-1], dtype=complex)
+    # 详见傅立叶变换公式，需要分割实数和虚数
     contours_complex.real = contour_array[:,0]#横坐标作为实数部分
     contours_complex.imag = contour_array[:,1]#纵坐标作为虚数部分
     # 好家伙，直接一个fft完成傅立叶变换！

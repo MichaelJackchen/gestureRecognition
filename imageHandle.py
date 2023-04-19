@@ -168,7 +168,7 @@ def getHandFeatures(binariedImage):
     # opencv高版本返回两个值
 
     gray = cv2.cvtColor(binariedImage, cv2.COLOR_BGR2GRAY)
-    # 拉普拉斯算子提取边缘
+    # 拉普拉斯算子提取轮廓点坐标
     dst = cv2.Laplacian(gray, cv2.CV_16S, ksize=3)
     # 取像素绝对值
     Laplacian = cv2.convertScaleAbs(dst)
