@@ -1,4 +1,4 @@
-# fingersDection
+# gestureRecognition
 ***
 *   edition: python3.9, opencv2
 *   based on BPNN
